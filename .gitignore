@@ -1,0 +1,28 @@
+# Python cache
+__pycache__/
+
+# GHC build artifacts
+*.hi
+*.o
+*.dyn_hi
+*.dyn_o
+*.prof
+*.aux
+*.hp
+*.eventlog
+
+# Cabal build directory
+dist/
+dist-newstyle/
+
+# Stack build directory
+.stack-work/
+
+# Haskell REPL history
+.ghci_history
+.ghc.environment.*
+
+# Haskell Language Server
+.hie/
+.hie-bios/
+.hie-cache/
