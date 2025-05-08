@@ -7,23 +7,20 @@ main = case solveKojun problem regions of
   Just solution -> mapM_ print solution
   Nothing -> putStrLn "Nenhuma solução encontrada."
 
--- Algoritmo principal
 solveKojun :: Grid -> RegionMap -> Maybe Grid
 solveKojun grid regions = backtrack grid regions (0, 0)
 
--- Backtracking com exploração de candidatos válidos
 backtrack :: Grid -> RegionMap -> Coord -> Maybe Grid
 backtrack grid regions (r, c)
   | r == length grid = Just grid
   | grid !! r !! c /= 0 = backtrack grid regions (nextCoord (r, c))
   | otherwise =
       let regionId = regions !! r !! c
-          regionSize = length [ () | i <- [0..9], j <- [0..9], regions !! i !! j == regionId ]
+          regionSize = length [ () | i <- [0..length grid - 1], j <- [0..length grid - 1], regions !! i !! j == regionId ]
           candidates = [1..regionSize]
           nextGrids = [ updateGrid grid (r, c) v | v <- candidates, valid grid regions (r, c) v ]
       in trySolutions nextGrids regions (nextCoord (r, c))
 
--- Tenta resolver usando cada grid possível
 trySolutions :: [Grid] -> RegionMap -> Coord -> Maybe Grid
 trySolutions [] _ _ = Nothing
 trySolutions (g:gs) regions coord =
@@ -31,56 +28,63 @@ trySolutions (g:gs) regions coord =
     Just solution -> Just solution
     Nothing -> trySolutions gs regions coord
 
--- Próxima coordenada da esquerda para a direita
 nextCoord :: Coord -> Coord
 nextCoord (r, c)
   | c < 9     = (r, c + 1)
   | otherwise = (r + 1, 0)
 
--- Atualiza valor no grid
 updateGrid :: Grid -> Coord -> Int -> Grid
 updateGrid grid (r, c) val =
   take r grid ++
   [take c (grid !! r) ++ [val] ++ drop (c + 1) (grid !! r)] ++
   drop (r + 1) grid
 
--- Verifica se o valor é válido na posição
+-- Validação de valor
 valid :: Grid -> RegionMap -> Coord -> Int -> Bool
-valid grid regions (r, c) val =
-  notInColumn && notInRegion && validVertical
+valid grid regions coord@(r, c) val =
+  notSameAsAdjacent && notInRegion && validVertical grid regions coord val
   where
-    colVals = [ grid !! i !! c | i <- [0..9], grid !! i !! c /= 0 ]
-    notInColumn = val `notElem` colVals
+    -- Agora verifica todos os 4 vizinhos ortogonais
+    notSameAsAdjacent =
+      getCell grid (r - 1, c) /= Just val &&
+      getCell grid (r + 1, c) /= Just val &&
+      getCell grid (r, c - 1) /= Just val &&
+      getCell grid (r, c + 1) /= Just val
 
     regionId = regions !! r !! c
-    regionCells = [ (i, j) | i <- [0..9], j <- [0..9], regions !! i !! j == regionId ]
+    regionCells = [ (i, j) | i <- [0..length grid - 1], j <- [0..length grid - 1], regions !! i !! j == regionId ]
     regionVals = [ grid !! i !! j | (i, j) <- regionCells, grid !! i !! j /= 0 ]
     notInRegion = val `notElem` regionVals
 
-    validVertical =
-      case (getCell grid (r - 1, c), getRegion regions (r - 1, c)) of
-        (Just u, Just ru) | ru == regionId -> u == 0 || u > val
-        _ -> True
-      &&
-      case (getCell grid (r + 1, c), getRegion regions (r + 1, c)) of
-        (Just d, Just rd) | rd == regionId -> d == 0 || val > d
-        _ -> True
+-- Verificação vertical: ordem em regiões verticais
+validVertical :: Grid -> RegionMap -> Coord -> Int -> Bool
+validVertical grid regions (r, c) val =
+  let upRegion    = getRegion regions (r - 1, c)
+      downRegion  = getRegion regions (r + 1, c)
+  in case getCell grid (r - 1, c) of
+       Just u -> u /= val && (upRegion /= Just regionId || u > val)
+       Nothing -> True
+     &&
+     case getCell grid (r + 1, c) of
+       Just d -> d /= val && (downRegion /= Just regionId || val > d)
+       Nothing -> True
+  where
+    regionId = regions !! r !! c
 
--- Acessa célula do grid com segurança
+-- Acessos seguros
 getCell :: Grid -> Coord -> Maybe Int
 getCell grid (r, c)
   | r < 0 || r >= length grid = Nothing
   | c < 0 || c >= length (head grid) = Nothing
   | otherwise = Just ((grid !! r) !! c)
 
--- Acessa célula do mapa de regiões com segurança
 getRegion :: RegionMap -> Coord -> Maybe Int
 getRegion regions (r, c)
   | r < 0 || r >= length regions = Nothing
   | c < 0 || c >= length (head regions) = Nothing
   | otherwise = Just ((regions !! r) !! c)
 
--- Grid com valores iniciais do problema
+-- Entrada do problema
 problem :: Grid
 problem =
   [ [5,0,2,0,2,0,3,1,3,1]
@@ -95,7 +99,6 @@ problem =
   , [0,1,0,2,0,6,2,0,2,1]
   ]
 
--- Regiões do tabuleiro
 regions :: RegionMap
 regions =
   [ [1,5,5,5,9,9,9,9,20,20]
