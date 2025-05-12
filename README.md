@@ -12,7 +12,7 @@ https://youtu.be/MupEclHpobk?si=HULbyp5uGS16jnju
 https://youtu.be/zIfjnX1EhpE?si=KRfl4Ortc966qWB5
 
 https://github.com/ErFer7/Kojun
-https://github.com/Soul-Legend/KojunHaskell/blob/main/solver.hs
+https://github.com/Soul-Legend/KojunHaskell/blob/main/solver.hs 
 
 Python:
 https://youtu.be/eqUwSA0xI-s?si=_mavYER40TlNq1eJ
