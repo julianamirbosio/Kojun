@@ -1,8 +1,19 @@
-{-  Trabalho 1 de Paradigmas de Programação
+{-  
+    Universidade Federal de Santa Catarina
+    Trabalho 1 de Paradigmas de Programação
     Grupo:
         - Heloísa Jomck Hammes (23200361)
         - Juliana Miranda Bosio (23201966)
+
+    Uso:
+        Compile os arquivos com o comando:
+        ghc Main.hs Kojun.hs Utils.hs -o kojun
+
+        Execute o programa com o comando:
+        ./kojun <arquivo_de_entrada>
+        ./kojun problems/input.txt
 -}
+
 
 module Main where
 
