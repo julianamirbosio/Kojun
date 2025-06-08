@@ -26,3 +26,9 @@ dist-newstyle/
 .hie/
 .hie-bios/
 .hie-cache/
+
+# Scala Compiled class files
+*.class
+
+# Scala SBT target folder
+target/
