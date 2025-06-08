@@ -1,3 +1,7 @@
+/* 
+ * scalac Utils.scala KojunSolver.scala Main.scala  
+ * scala Main ../inputs/input1.txt
+ */
 import Utils._
 import KojunSolver._
 
