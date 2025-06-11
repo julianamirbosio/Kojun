@@ -53,11 +53,12 @@ object KojunSolver {
         }
 
         // Regra 2: adjacentes diferentes
-        for (dr <- -1 to 1; dc <- -1 to 1 if (dr != 0 || dc != 0)) {
-            val nr: Int = row + dr
-            val nc: Int = col + dc
-            if ((0 <= nr && nr < board.length) && (0 <= nc && nc < board(0).length)) {
-                if (board(nr)(nc) == value) return false 
+        val deltas = List((-1,0), (1,0), (0,-1), (0,1))
+        for ((dr, dc) <- deltas) {
+            val nr = row + dr
+            val nc = col + dc
+            if (0 <= nr && nr < board.length && 0 <= nc && nc < board(0).length) {
+                if (board(nr)(nc) == value) return false
             }
         }
 
@@ -65,13 +66,13 @@ object KojunSolver {
         // Célula acima
         if (row > 0 && regions(row)(col) == regions(row-1)(col)) {
             val upVal: Int = board(row - 1)(col)
-            if (upVal != 0 && value != 0 && upVal >= value) return false
+            if (upVal != 0 && upVal <= value) return false
         }
 
         // Célula abaixo
         if (row < board.length - 1 && regions(row)(col) == regions(row + 1)(col)) {
             val downVal: Int = board(row + 1)(col)
-            if (downVal != 0 && value != 0 && downVal <= value) return false 
+            if (downVal != 0 && downVal >= value) return false
         }
 
         return true 
