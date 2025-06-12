@@ -1,13 +1,14 @@
 /* 
- * scalac Utils.scala KojunSolver.scala Main.scala  
- * scala Main ../inputs/input1.txt
- */
-
-/* 
- * Para compilar o projeto:
- *   scalac Utils.scala KojunSolver.scala Main.scala
- * Para rodar o programa:
- *   scala Main ../inputs/input1.txt
+ *  Universidade Federal de Santa Catarina
+ *  Trabalho 2 de Paradigmas de Programação
+ *  Grupo:
+ *      - Heloísa Jomck Hammes (23200361)
+ *      - Juliana Miranda Bosio (23201966)
+ *
+ *  Para compilar o projeto:
+ *    scalac Utils.scala KojunSolver.scala Main.scala
+ *  Para rodar o programa:
+ *    scala Main ../inputs/input1.txt
  */
 
 // Importa tudo do objeto Utils (funções utilitárias como readPuzzleFromFile e printGrid)
