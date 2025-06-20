@@ -50,45 +50,47 @@ constrain_regions(Grid, Regions) :-
     sort(Ids, UniqueIds),
     forall(member(Id, UniqueIds), (
         region_cells(Grid, Regions, Id, Cells),
+        format("Impondo all_different para região ~w com células ~w~n", [Id, Cells]),
         all_different(Cells)
     )).
 
-% Restrição: ordem vertical e diferença sempre
+% FUNÇÃO PROBLEMÁTICA!!!!!
+% Restrição: ordem vertical entre células adjacentes na mesma coluna e mesma região
 constrain_vertical_neighbors(Regions, Grid) :-
     length(Grid, Rows),
     Rows1 is Rows - 1,
     forall(between(0, Rows1, I), (
-        nth0(I, Grid, Row1),
-        nth0(I, Regions, Reg1),
+        nth0(I, Grid, RowTop),
+        nth0(I, Regions, RegTop),
         I2 is I + 1,
-        nth0(I2, Grid, Row2),
-        nth0(I2, Regions, Reg2),
-        length(Row1, NCols),
-        Cols1 is NCols - 1,
+        nth0(I2, Grid, RowBot),
+        nth0(I2, Regions, RegBot),
+        length(RowTop, Cols),
+        Cols1 is Cols - 1,
         forall(between(0, Cols1, J), (
-            nth0(J, Row1, V1),
-            nth0(J, Row2, V2),
-            nth0(J, Reg1, R1),
-            nth0(J, Reg2, R2),
-            V1 #\= V2,                     % <-- sempre diferentes
-            (R1 = R2 -> V1 #> V2 ; true)   % <-- se mesma região, aplicar ordem
+            nth0(J, RowTop, VTop),
+            nth0(J, RowBot, VBot),
+            nth0(J, RegTop, RTop),
+            nth0(J, RegBot, RBot),
+            format('Comparando célula (~w,~w) [~w,R=~w] com (~w,~w) [~w,R=~w]~n',
+                   [I,J,VTop,RTop,I2,J,VBot,RBot]),
+            VTop #> VBot
         ))
     )).
 
-% FUNÇÃO PROBLEMÁTICA!!!!!
 % Restrição: células adjacentes (cima, baixo, esquerda, direita) diferentes
 constrain_adjacent_regions(Grid) :-
     length(Grid, Rows),
     nth0(0, Grid, FirstRow),
     length(FirstRow, Cols),
-    forall(between(0, Rows-1, I), (
-        forall(between(0, Cols-1, J), (
+    forall(between(0, Rows - 1, I), (
+        forall(between(0, Cols - 1, J), (
             cell(Grid, I, J, V),
-            I1 is I+1, I2 is I-1, J1 is J+1, J2 is J-1,
-            (I1 < Rows -> cell(Grid, I1, J, D), V #\= D ; true),
-            (I2 >= 0    -> cell(Grid, I2, J, U), V #\= U ; true),
-            (J1 < Cols -> cell(Grid, I, J1, R), V #\= R ; true),
-            (J2 >= 0    -> cell(Grid, I, J2, L), V #\= L ; true)
+            I1 is I + 1, I2 is I - 1, J1 is J + 1, J2 is J - 1,
+            (I1 < Rows -> cell(Grid, I1, J, D), format("~n(~w,~w) ~w ≠ abaixo ~w~n", [I,J,V,D]), V #\= D ; true),
+            (I2 >= 0    -> cell(Grid, I2, J, U), format("(~w,~w) ~w ≠ acima ~w~n", [I,J,V,U]), V #\= U ; true),
+            (J1 < Cols -> cell(Grid, I, J1, R), format("(~w,~w) ~w ≠ direita ~w~n", [I,J,V,R]), V #\= R ; true),
+            (J2 >= 0    -> cell(Grid, I, J2, L), format("(~w,~w) ~w ≠ esquerda ~w~n", [I,J,V,L]), V #\= L ; true)
         ))
     )).
 
