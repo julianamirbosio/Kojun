@@ -2,7 +2,7 @@
     Universidade Federal de Santa Catarina
     Trabalho 1 de Paradigmas de Programação
     Grupo:
-        - Heloísa Jomck Hammes (23200361)
+        - Heloísa Jonck Hammes (23200361)
         - Juliana Miranda Bosio (23201966)
 
     Uso:
