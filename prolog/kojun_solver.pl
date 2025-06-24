@@ -1,118 +1,114 @@
 :- module(kojun_solver, [run_kojun/2]).
 :- use_module(library(clpfd)).
 
-% Predicado principal
-run_kojun(ProblemWithZeros, Regions) :-
-    same_length(ProblemWithZeros, Regions),
-    maplist(same_length, ProblemWithZeros, Regions),
-    compute_region_sizes(Regions, RegionSizes),
-    writeln('Tamanhos das regiões: '), writeln(RegionSizes),
-    transform_grid(ProblemWithZeros, Regions, RegionSizes, Grid),
-    writeln('Grid após transformação: '), maplist(writeln, Grid),
-    constrain_regions(Grid, Regions), writeln('constrain_regions OK'),
-    constrain_vertical_neighbors(Regions, Grid), writeln('constrain_vertical_neighbors OK'),
-    constrain_adjacent_regions(Grid), writeln('constrain_adjacent_regions OK'),
-    append(Grid, Vars),
-    labeling([], Vars), writeln('labeling OK'),
-    print_grid(Grid).
+run_kojun(Problem, Regions) :-
+    writeln('== Iniciando solução do Kojun =='),
+    construir_tabuleiro(Problem, Regions, Tab),
+    aplicar_regras(Tab, Regions),
+    coletar_variaveis(Tab, Vars),
+    labeling([], Vars),
+    exibir_tabuleiro(Tab).
 
-% Pré-processa os tamanhos das regiões
-compute_region_sizes(Regions, RegionSizes) :-
-    flatten(Regions, Flat),
-    sort(Flat, Unique),
-    findall(Id-N,
-        (member(Id, Unique), count_occurrences(Id, Flat, N)),
-        RegionSizes).
+% --- CONSTRUÇÃO DO TABULEIRO ---
+construir_tabuleiro([], [], []).
+construir_tabuleiro([PL|PT], [RL|RT], [Linha|Rest]) :-
+    construir_linha(PL, RL, Linha),
+    construir_tabuleiro(PT, RT, Rest).
 
-count_occurrences(Id, List, Count) :-
-    include(=(Id), List, Filtered),
-    length(Filtered, Count).
+construir_linha([], [], []).
+construir_linha([P|TP], [R|TR], [[R,V]|TL]) :-
+    ( integer(P), P =\= 0 -> V = P ; V in 1..100 ),
+    construir_linha(TP, TR, TL).
 
-% Transforma o grid substituindo zeros por variáveis com domínios
-transform_grid([], [], _, []).
-transform_grid([Row|RestP], [RRow|RestR], RegionSizes, [GRow|RestG]) :-
-    transform_row(Row, RRow, RegionSizes, GRow),
-    transform_grid(RestP, RestR, RegionSizes, RestG).
+% --- EXTRAÇÃO DE VARIÁVEIS SEM LISTAS ANINHADAS ---
+coletar_variaveis(Tab, Vars) :-
+    findall(V, (
+        member(Linha, Tab),
+        member([_,V], Linha)
+    ), Vars).
 
-transform_row([], [], _, []).
-transform_row([Cell|Cells], [RegionId|RegionIds], RegionSizes, [Var|Vars]) :-
-    transform_cell(Cell, RegionId, RegionSizes, Var),
-    transform_row(Cells, RegionIds, RegionSizes, Vars).
+% --- APLICA TODAS AS REGRAS ---
+aplicar_regras(Tab, Regions) :-
+    definir_dominios(Tab, Regions),
+    restricao_vizinhos(Tab),
+    transpose(Tab, Colunas),
+    restricao_vizinhos(Colunas),
+    restricao_decrescente(Colunas),
+    garantir_unicidade_por_regiao(Tab).
 
-transform_cell(0, RegionId, RegionSizes, Var) :-
-    member(RegionId-N, RegionSizes),
-    Var in 1..N.
-transform_cell(X, _, _, X) :- X \= 0.
+% --- DOMÍNIOS COM BASE NAS REGIÕES ---
+definir_dominios([], _).
+definir_dominios([Linha|Resto], Regions) :-
+    definir_dominios_linha(Linha, Regions),
+    definir_dominios(Resto, Regions).
 
-% Restrição: valores distintos por região
-constrain_regions(Grid, Regions) :-
-    findall(Id, (member(Row, Regions), member(Id, Row)), Ids),
-    sort(Ids, UniqueIds),
-    forall(member(Id, UniqueIds), (
-        region_cells(Grid, Regions, Id, Cells),
-        format("Impondo all_different para região ~w com células ~w~n", [Id, Cells]),
-        all_different(Cells)
-    )).
+definir_dominios_linha([], _).
+definir_dominios_linha([[Reg,V]|T], Regions) :-
+    tamanho_regiao(Reg, Regions, Limite),
+    V in 1..Limite,
+    definir_dominios_linha(T, Regions).
 
-% FUNÇÃO PROBLEMÁTICA!!!!!
-% Restrição: ordem vertical entre células adjacentes na mesma coluna e mesma região
-constrain_vertical_neighbors(Regions, Grid) :-
-    length(Grid, Rows),
-    Rows1 is Rows - 1,
-    forall(between(0, Rows1, I), (
-        nth0(I, Grid, RowTop),
-        nth0(I, Regions, RegTop),
-        I2 is I + 1,
-        nth0(I2, Grid, RowBot),
-        nth0(I2, Regions, RegBot),
-        length(RowTop, Cols),
-        Cols1 is Cols - 1,
-        forall(between(0, Cols1, J), (
-            nth0(J, RowTop, VTop),
-            nth0(J, RowBot, VBot),
-            nth0(J, RegTop, RTop),
-            nth0(J, RegBot, RBot),
-            format('Comparando célula (~w,~w) [~w,R=~w] com (~w,~w) [~w,R=~w]~n',
-                   [I,J,VTop,RTop,I2,J,VBot,RBot]),
-            VTop #> VBot
-        ))
-    )).
+tamanho_regiao(Id, Regs, Tam) :-
+    flatten(Regs, Flat),
+    include(=(Id), Flat, Lista),
+    length(Lista, Tam).
 
-% Restrição: células adjacentes (cima, baixo, esquerda, direita) diferentes
-constrain_adjacent_regions(Grid) :-
-    length(Grid, Rows),
-    nth0(0, Grid, FirstRow),
-    length(FirstRow, Cols),
-    forall(between(0, Rows - 1, I), (
-        forall(between(0, Cols - 1, J), (
-            cell(Grid, I, J, V),
-            I1 is I + 1, I2 is I - 1, J1 is J + 1, J2 is J - 1,
-            (I1 < Rows -> cell(Grid, I1, J, D), format("~n(~w,~w) ~w ≠ abaixo ~w~n", [I,J,V,D]), V #\= D ; true),
-            (I2 >= 0    -> cell(Grid, I2, J, U), format("(~w,~w) ~w ≠ acima ~w~n", [I,J,V,U]), V #\= U ; true),
-            (J1 < Cols -> cell(Grid, I, J1, R), format("(~w,~w) ~w ≠ direita ~w~n", [I,J,V,R]), V #\= R ; true),
-            (J2 >= 0    -> cell(Grid, I, J2, L), format("(~w,~w) ~w ≠ esquerda ~w~n", [I,J,V,L]), V #\= L ; true)
-        ))
-    )).
+% --- VIZINHOS DIRETOS DIFERENTES ---
+restricao_vizinhos([]).
+restricao_vizinhos([Linha|Outros]) :-
+    vizinhos_distintos(Linha),
+    restricao_vizinhos(Outros).
 
-% Utilitários
-cell(Matrix, I, J, Val) :- nth0(I, Matrix, Row), nth0(J, Row, Val).
-region_id(Regions, I, J, Id) :- cell(Regions, I, J, Id).
+vizinhos_distintos([]).
+vizinhos_distintos([_]).
+vizinhos_distintos([[_,A],[_,B]|T]) :-
+    A #\= B,
+    vizinhos_distintos([[_,B]|T]).
 
-region_cells(Grid, Regions, Id, Cells) :-
-    findall(Val,
-        (nth0(I, Grid, GRow),
-         nth0(I, Regions, RRow),
-         nth0(J, GRow, Val),
-         nth0(J, RRow, Id)),
-        Cells).
+% --- REGRA DECRESCENTE VERTICAL ---
+restricao_decrescente([]).
+restricao_decrescente([Coluna|Resto]) :-
+    decrescentes_coluna(Coluna),
+    restricao_decrescente(Resto).
 
-print_grid([]).
-print_grid([Row|Rest]) :-
-    print_row(Row), nl,
-    print_grid(Rest).
+decrescentes_coluna([]).
+decrescentes_coluna([_]).
+decrescentes_coluna([[R1,V1],[R2,V2]|Tail]) :-
+    (R1 =:= R2 -> V1 #> V2 ; true),
+    decrescentes_coluna([[R2,V2]|Tail]).
 
-print_row([]).
-print_row([X|Xs]) :-
-    ( var(X) -> write('_') ; write(X) ),
-    write(' '),
-    print_row(Xs).
+% --- UNICIDADE POR REGIÃO SEM LISTAS ANINHADAS ---
+garantir_unicidade_por_regiao(Tab) :-
+    total_regioes(Tab, Max),
+    aplicar_em_regioes(1, Max, Tab).
+
+aplicar_em_regioes(Id, Max, _) :-
+    Id > Max, !.
+aplicar_em_regioes(Id, Max, Grid) :-
+    extrair_regiao(Id, Grid, Valores),
+    all_distinct(Valores),
+    Prox is Id + 1,
+    aplicar_em_regioes(Prox, Max, Grid).
+
+extrair_regiao(_, [], []).
+extrair_regiao(Id, [Linha|Resto], Saida) :-
+    filtrar_regiao(Id, Linha, Parciais),
+    extrair_regiao(Id, Resto, Outras),
+    append(Parciais, Outras, Saida).
+
+filtrar_regiao(_, [], []).
+filtrar_regiao(R, [[R,V]|T], [V|S]) :- filtrar_regiao(R, T, S).
+filtrar_regiao(R, [[Out,_]|T], S) :- R =\= Out, filtrar_regiao(R, T, S).
+
+% --- DESCOBRE O NÚMERO DE REGIÕES A PARTIR DO TABULEIRO ---
+total_regioes(Tab, Max) :-
+    findall(R, (member(L, Tab), member([R,_], L)), Todos),
+    sort(Todos, Unicos),
+    max_list(Unicos, Max).
+
+% --- EXIBIÇÃO DO RESULTADO ---
+exibir_tabuleiro([]).
+exibir_tabuleiro([Linha|Outros]) :-
+    maplist(arg(2), Linha, Valores),
+    writeln(Valores),
+    exibir_tabuleiro(Outros).
