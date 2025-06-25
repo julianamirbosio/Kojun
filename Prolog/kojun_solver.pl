@@ -42,7 +42,7 @@ backtrack(Grid, _, Row, _, Grid) :-
     % testa se Row é igual a length(Grid)
     length(Grid, Row).
 
-% Segunda Cláusula: caso recursivo
+% Segunda Cláusula: caso recursivo - células preenchidas
 backtrack(Grid, Regions, Row, Col, Solution) :-
     % se a célula já estiver preenchida (!=0), apenas avança
     % nth0(Index, List, Element)
@@ -52,7 +52,7 @@ backtrack(Grid, Regions, Row, Col, Solution) :-
     next_coord(Grid, Row, Col, NextRow, NextCol),   % calcula próxima (Row,Col)
     backtrack(Grid, Regions, NextRow, NextCol, Solution).
 
-% Terceira Cláusula: caso recursivo
+% Terceira Cláusula: caso recursivo - células vazias
 backtrack(Grid, Regions, Row, Col, Solution) :-
     % célula vazia: gera candidatos, testa e recua
     nth0(Row, Regions, RegRow),                     % pega a linha Row de Regions
