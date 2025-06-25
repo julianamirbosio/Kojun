@@ -140,7 +140,7 @@ valid_vertical(Grid, Regions, R, C, Val) :-
         R1 is R-1,
         nth0(R1, Regions, RR1), nth0(C, RR1, AboveReg),
         get_cell(Grid, R1, C, V1),
-        % Corrigido: mesma região → valor acima deve ser MAIOR
+        % mesma região → valor acima deve ser MAIOR
         ( (AboveReg =:= RegID, V1 \= 0) -> V1 > Val ; true)
     ; true ),
     % Regra para célula ABAIXO (↓)
@@ -148,7 +148,7 @@ valid_vertical(Grid, Regions, R, C, Val) :-
         R2 is R+1,
         nth0(R2, Regions, RR2), nth0(C, RR2, BelowReg),
         get_cell(Grid, R2, C, V2),
-        % Corrigido: mesma região → valor abaixo deve ser MENOR
+        % mesma região → valor abaixo deve ser MENOR
         ( (BelowReg =:= RegID, V2 \= 0) -> V2 < Val ; true)
     ; true ).
 
