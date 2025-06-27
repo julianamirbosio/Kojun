@@ -42,7 +42,7 @@ backtrack(Grid, _, Row, _, Grid) :-
     % testa se Row é igual a length(Grid)
     length(Grid, Row).
 
-% Segunda Cláusula: caso recursivo
+% Segunda Cláusula: caso recursivo - células preenchidas
 backtrack(Grid, Regions, Row, Col, Solution) :-
     % se a célula já estiver preenchida (!=0), apenas avança
     % nth0(Index, List, Element)
@@ -52,7 +52,7 @@ backtrack(Grid, Regions, Row, Col, Solution) :-
     next_coord(Grid, Row, Col, NextRow, NextCol),   % calcula próxima (Row,Col)
     backtrack(Grid, Regions, NextRow, NextCol, Solution).
 
-% Terceira Cláusula: caso recursivo
+% Terceira Cláusula: caso recursivo - células vazias
 backtrack(Grid, Regions, Row, Col, Solution) :-
     % célula vazia: gera candidatos, testa e recua
     nth0(Row, Regions, RegRow),                     % pega a linha Row de Regions
@@ -140,7 +140,7 @@ valid_vertical(Grid, Regions, R, C, Val) :-
         R1 is R-1,
         nth0(R1, Regions, RR1), nth0(C, RR1, AboveReg),
         get_cell(Grid, R1, C, V1),
-        % Corrigido: mesma região → valor acima deve ser MAIOR
+        % mesma região → valor acima deve ser MAIOR
         ( (AboveReg =:= RegID, V1 \= 0) -> V1 > Val ; true)
     ; true ),
     % Regra para célula ABAIXO (↓)
@@ -148,7 +148,7 @@ valid_vertical(Grid, Regions, R, C, Val) :-
         R2 is R+1,
         nth0(R2, Regions, RR2), nth0(C, RR2, BelowReg),
         get_cell(Grid, R2, C, V2),
-        % Corrigido: mesma região → valor abaixo deve ser MENOR
+        % mesma região → valor abaixo deve ser MENOR
         ( (BelowReg =:= RegID, V2 \= 0) -> V2 < Val ; true)
     ; true ).
 
