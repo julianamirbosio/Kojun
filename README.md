@@ -40,20 +40,11 @@ Repositório contendo solucionadores do puzzle **Kojun** por *backtracking* em d
 
 * **Jogo Kojun**: [https://www.janko.at/Raetsel/Kojun/index.htm](https://www.janko.at/Raetsel/Kojun/index.htm)
 
-* **Backtracking Sudoku**
-
-  * Guia passo a passo: [https://codemyroad.wordpress.com/2014/05/01/solving-sudoku-by-backtracking/](https://codemyroad.wordpress.com/2014/05/01/solving-sudoku-by-backtracking/)
-  * Haskell Sudoku Solver: [https://github.com/danieldn/haskell-sudoku-solver](https://github.com/danieldn/haskell-sudoku-solver)
-  * Vídeos explicativos:
-
-    * [https://youtu.be/MupEclHpobk?si=HULbyp5uGS16jnju](https://youtu.be/MupEclHpobk?si=HULbyp5uGS16jnju)
-    * [https://youtu.be/zIfjnX1EhpE?si=KRfl4Ortc966qWB5](https://youtu.be/zIfjnX1EhpE?si=KRfl4Ortc966qWB5)
-
-* **Kojun em Haskell**: [https://github.com/Soul-Legend/KojunHaskell/blob/main/solver.hs](https://github.com/Soul-Legend/KojunHaskell/blob/main/solver.hs)
-
-* **Repositórios Externos**:
-
-  * [https://github.com/ErFer7/Kojun](https://github.com/ErFer7/Kojun)
-
-* **Implementação em Python (vídeo)**: [https://youtu.be/eqUwSA0xI-s?si=\_mavYER40TlNq1eJ](https://youtu.be/eqUwSA0xI-s?si=_mavYER40TlNq1eJ)
+* [https://codemyroad.wordpress.com/2014/05/01/solving-sudoku-by-backtracking/](https://codemyroad.wordpress.com/2014/05/01/solving-sudoku-by-backtracking/)
+* [https://github.com/danieldn/haskell-sudoku-solver](https://github.com/danieldn/haskell-sudoku-solver)
+* [https://youtu.be/MupEclHpobk?si=HULbyp5uGS16jnju](https://youtu.be/MupEclHpobk?si=HULbyp5uGS16jnju)
+* [https://youtu.be/zIfjnX1EhpE?si=KRfl4Ortc966qWB5](https://youtu.be/zIfjnX1EhpE?si=KRfl4Ortc966qWB5)
+* [https://github.com/Soul-Legend/KojunHaskell/blob/main/solver.hs](https://github.com/Soul-Legend/KojunHaskell/blob/main/solver.hs)
+* [https://github.com/ErFer7/Kojun](https://github.com/ErFer7/Kojun)
+* [https://youtu.be/eqUwSA0xI-s?si=\_mavYER40TlNq1eJ](https://youtu.be/eqUwSA0xI-s?si=_mavYER40TlNq1eJ)
 
